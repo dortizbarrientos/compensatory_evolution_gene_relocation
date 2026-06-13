@@ -1,0 +1,118 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage[numbers]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+\hypersetup{
+    pdftitle={The regulatory fate of relocated genes in the Drosophila male germline},
+}
+
+\title{\textbf{The regulatory fate of relocated genes in the \emph{Drosophila} male germline}\\[2pt]
+\large What is known about X suppression and its compensation, and why the female-origin response is the open question}
+\author{\textbf{Daniel Ortiz-Barrientos}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\noindent A gene's expression depends not only on its own sequence but on the chromosomal neighbourhood it sits in, and nowhere is this clearer than the \emph{Drosophila} male germline, where the X chromosome is transcriptionally suppressed several-fold relative to the autosomes. This essay reframes a long-standing project---why moving genes between the X and the autosomes changes male fertility---as a question about the \emph{regulatory response} that such movement provokes, and it asks one question the field has answered only on one side. When a gene leaves the suppressed X for a permissive autosome, or arrives on the X from an autosome, what regulatory change follows, and does that change differ by the sex-bias of the gene's function? The male-benefit side is mapped: X-linked testis genes have evolved strong compensatory promoters that offset suppression, and genes that need still more expression relocate or duplicate to the autosomes. The female-benefit side is not. The mirror-image case---an ovary-biased gene relocated to a permissive autosome, now exposed to male-germline expression it may not tolerate---has been approached through gene loss and chromosomal sorting, but the question of whether such genes evolve \emph{active male-germline silencing} as a compensatory response, and how that response differs in tempo and likelihood from the male-side boost, remains open. I map what is established, isolate this asymmetry, and set out the quantities a population-genetic model would need to make it precise. The aim is a single, testable prediction about the direction and rate of regulatory evolution after relocation, grounded in known theory before any new claim is made.
+\end{abstract}
+
+\section{From movement and sterility to the regulatory response}
+
+A project that began as ``why does relocating X material sterilise males'' has, over three decades of work, resolved into something more tractable and more interesting. The sterility of X--autosome translocations, which Lifschytz and Lindsley used to launch the hypothesis of meiotic X inactivation \citep{ll1972}, turns out in \emph{Drosophila} to be a poor handle on the underlying biology: fly male meiosis is achiasmate, the synapsis-based silencing that explains mammalian translocation sterility cannot operate, and direct expression assays on fly translocations find neither the aberrant overexpression nor the aberrant silencing that a disrupted-inactivation model predicts \citep{landeen2016}. The productive object of study is not the sterilising rearrangement, which is an evolutionary dead end, but the regulatory environment that any relocated gene encounters and the evolutionary response it provokes in the genes that survive relocation. That shift---from the fate of the rearrangement to the fate of the gene---is the reframing this essay adopts, and it turns a question about pathology into a question about adaptation.
+
+The environment in question is now well characterised, and it is not classical meiotic sex chromosome inactivation. In the \emph{Drosophila} male germline the X chromosome is transcriptionally suppressed several-fold, but the suppression is detectable early, in premeiotic cells, affects housekeeping as well as testis-specific genes, and is therefore distinct from the dynamic, meiosis-specific silencing seen in mammals. The cleanest demonstration moves the \emph{same} gene between compartments: across transgenes and chromosomal transpositions, endogenous X-linked genes are expressed on average several-fold higher once relocated to an autosome, an effect that does not depend on the size of the moved segment \citep{landeen2016}. The X is a quieter place to be a gene in the male germline, and the genome has had to evolve around that fact.
+
+\section{What is established: the male-benefit side of the response}
+
+\subsection{X suppression as a fixed feature of the environment}
+
+The first established fact is that suppression is a property of \emph{location}, not of \emph{sequence}. Identical promoters drive systematically lower expression from X-linked than from autosomal insertion sites, and the effect reverses cleanly when the gene is moved, which means it cannot be read off the gene's own regulatory DNA \citep{landeen2016}. Its mechanism is still unknown---candidates include a repressive chromatin state and sequestration at the transcriptionally quiet nuclear periphery---but for the evolutionary question the mechanism is secondary. What matters is that suppression is a stable, several-fold tax levied on any gene residing on the X in the male germline, and that the genome's response to a fixed tax is where the adaptation lives.
+
+\subsection{Compensation by promoter recruitment}
+
+The second established fact is the response itself, on the male-benefit side. X-linked genes that need strong testis expression have not surrendered to suppression; they have evolved promoters strong enough to cancel it. A specific promoter element, enriched upstream of testis-expressed genes, overrepresented on the X relative to the autosomes, evolutionarily conserved at its functional positions, and validated by mutagenesis to supply roughly the boost required, is the molecular signature of this compensation \citep{landeen2016}. The arithmetic is almost exact: the element supplies close to the several-fold increase needed to offset the several-fold suppression, so that in wild-type testes global X expression looks unremarkable, the suppression hidden behind a chromosome's worth of compensating promoters. This is compensatory \emph{cis}-regulatory evolution in its clearest form---a chromosome-wide cost met gene by gene by adaptive regulatory change.
+
+\subsection{Compensation by relocation}
+
+The third established fact connects the regulatory response to the gene-traffic literature that motivated this project. If suppression imposes a ceiling on the expression achievable from the X, then a gene whose optimum exceeds that ceiling has a second route to relief: leave. The excess of testis-expressed genes that have duplicated or retroposed from the X to the autosomes---the ``out of the testis'' pattern---is, on this reading, the demographic shadow of the same suppression that the promoter element compensates locally \citep{betran2002,assis2019,zhang2010}. Relocation and promoter recruitment are two solutions to one problem, and the genome uses both. The male-benefit side of the response is thus mapped in all three of its forms: tolerate the suppression, out-evolve it with a stronger promoter, or escape it by moving.
+
+\section{The wider sorting context}
+
+These regulatory responses sit inside the older, well-developed framework of how sex-biased genes are distributed across the genome. Two forces are conventionally invoked. Meiotic constraint on the X---whether true inactivation or the suppression described above---disfavours genes that must be expressed in the male germline, driving demasculinisation. Sexual antagonism, following Rice, makes the X a favourable home for dominant female-benefit alleles and recessive male-benefit alleles, contributing both feminisation and a transient enrichment of new male-benefit genes \citep{rice1984,zhang2010,connallon2011}. The result is the observed asymmetry of content: female-biased genes accumulate on the X, male-biased genes are exported to or arise on the autosomes, and the pattern shifts with gene age as young X-linked male genes are silenced and exported over time \citep{zhang2010}. Recent work on neo-sex chromosomes confirms that linkage to a new sex chromosome rapidly reshapes sex-biased expression in the predicted directions, reinforcing that this sorting is an active, ongoing process rather than a frozen relic \citep{minovic2024}.
+
+For the present question the important point is that this framework describes \emph{which genes end up where}, and treats the regulatory state of a relocated gene mostly as a sorting criterion---genes are retained or lost, exported or accumulated, according to whether their expression suits the compartment. What it does not do is track the \emph{evolution of new regulation} at a gene after it has moved against the grain. That is the seam this essay opens.
+
+\section{The open question: the female-origin asymmetry}
+
+\subsection{Stating the asymmetry}
+
+The male-benefit response has a clear logic: a gene that needs male-germline expression, stuck in the suppressed X, evolves a stronger promoter (boost) or relocates to a permissive autosome (escape). Now run the logic in reverse. Consider a female-benefit, ovary-biased gene that begins on the X---its favoured home---and is relocated, by duplication or retroposition, to an autosome. On the autosome it sits in the permissive male-germline environment that the X was suppressing. A gene optimised for the female germline and quiet in males has, on relocation, lost the very suppression that kept it quiet. The prediction symmetric to the male case is that such a gene should evolve \emph{active male-germline silencing}---a new repressive regulatory state---to restore the sex-limited expression that relocation stripped away. The male-origin gene evolves a promoter that shouts over suppression; the female-origin gene should evolve a silencer that re-imposes it. Table~\ref{tab:asymmetry} lays out the four cases this generates.
+
+\begin{table}[h!]
+\centering
+\small
+\caption{The regulatory response predicted after relocation, by gene sex-bias and direction of movement. The upper-left cell is the established case \citep{landeen2016}; the lower-right cell, the mirror image, is the open question.}
+\label{tab:asymmetry}
+\begin{tabular}{p{2.8cm} p{5.3cm} p{5.3cm}}
+\toprule
+ & \textbf{X $\rightarrow$ autosome} (into a permissive environment) & \textbf{autosome $\rightarrow$ X} (into a suppressed environment) \\
+\midrule
+\textbf{Male-benefit gene} & \emph{Established.} Escapes suppression; gains expression. Favoured; underlies ``out of the testis'' export. & Suppressed on arrival; must evolve a compensatory boosting promoter to function---the documented promoter-element response. \\
+\addlinespace
+\textbf{Female-benefit gene} & \emph{Open.} Now ectopically expressed in the male germline. Predicted to evolve active male-germline silencing, or be lost. The mirror of the established case. & Arrives in its favoured, suppressed home; expression already sex-limited. Little response required. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Why the female cell is genuinely under-examined}
+
+The field has approached the female side, but obliquely and never as a regulatory-response problem. The ``into the ovary'' work treats female-reproductive genes through the lens of gene \emph{loss}---a deletion bias that preserves old ovary-expressed genes---rather than through the evolution of new silencing at relocated copies \citep{assis2019}. The demasculinisation--feminisation framework treats female-biased genes as a category that \emph{accumulates} on the X, not as relocated copies that must regulate themselves once off it \citep{zhang2010,connallon2011}. And the compensatory-promoter work, which is the natural template for the question, studied boosting, not silencing, and worked from X-linked genes rather than female-origin autosomal relocations \citep{landeen2016}. The mirror-image cell of Table~\ref{tab:asymmetry}---does a relocated female-origin gene evolve male-germline silencing, on what timescale, and how often does it fail and get purged instead---has not, to my reading, been posed directly. That is the empirical gap.
+
+\subsection{Why it is also a dynamics gap}
+
+There is a second gap, orthogonal to the first and arguably more open. Everything above is static: it describes states (suppressed, compensated, relocated, lost) and the selective logic that sorts genes among them. None of it describes the \emph{tempo} of the response or its \emph{failure modes}. How fast must a compensatory promoter evolve to rescue a gene before the unrescued copy is lost? Over what window is a relocated female-origin gene exposed to costly male-germline expression before silencing evolves, and how does that window depend on the strength of the suppression it escaped, the cost of misexpression, the mutational supply of silencer and promoter variants, and the effective population size? These are quantitative questions, and they are exactly the questions a model answers and prose cannot. The empirical literature gives us the endpoints; it does not give us the trajectory between them or the conditions under which the trajectory fails.
+
+\section{Toward a model}
+
+The natural next step is to make the asymmetry quantitative before claiming it is real, in keeping with the discipline of recovering known results before reaching for new ones. A minimal model has a small set of ingredients, each tied to a measured quantity. Let a relocated gene experience a destination-dependent expression multiplier---suppression on the X, release on the autosome---of the magnitude the transposition experiments measure. Let misexpression in the wrong germline carry a fitness cost whose shape (linear, threshold, or accelerating in the degree of misexpression) is itself a hypothesis to be varied. Let compensatory variants---boosting promoters for the male-benefit case, silencers for the female-benefit case---arise at some mutational rate and fix under selection set against drift by the effective population size. The model then asks, for each cell of Table~\ref{tab:asymmetry}, the probability that compensation fixes before the relocated copy is lost, and the expected time to compensation conditional on success.
+
+Such a model makes the asymmetry testable in the only way that matters. If the boosting and silencing responses draw on mutational targets of different size---and there is reason to think building a strong promoter and building a reliable silencer are not equally easy---then the model predicts different fixation probabilities and different waiting times for the two halves of Table~\ref{tab:asymmetry}, and those differences should leave a signature in the relative ages, expression states, and survival rates of male-origin versus female-origin relocations. Worked analytically first, to expose the limiting regimes and recover the established male-side result as a special case, and then computationally, to map the parameter space and locate the failure modes, the model converts a verbal asymmetry into a quantitative prediction that data on relocated genes could confirm or refute. That construction is the subject of the companion analysis; the purpose here has been to establish, against the current literature, that the male-side response is solved, that the female-side mirror is not, and that the gap is real enough to be worth a model.
+
+\section{Honest assessment}
+
+The framework this review sits in is mature, and that must be stated plainly. X suppression, its compensation by promoter recruitment, the export of male genes to the autosomes, and the sorting of sex-biased genes by sexual antagonism and meiotic constraint are all established, several of them for more than a decade \citep{landeen2016,zhang2010,rice1984,betran2002}. A contribution here cannot come from rediscovering that genes sort by sex-bias, nor from re-deriving demasculinisation. It can come, if anywhere, from the two corners the established work leaves dark: the regulatory fate of female-origin relocations, which has been approached through loss but not through the evolution of silencing; and the dynamics of compensation, which no one has modelled. Both are narrow. Both are real. And both are reachable with the transposition-and-expression toolkit already in hand, without recourse to the sterilising translocations that sent the original project down a blind alley. The value of the reframing is precisely that it points the project at a question the field has the tools to answer and has not yet asked.
+
+\begin{thebibliography}{99}
+
+\bibitem{assis2019} Assis, R. (2019). Out of the testis, into the ovary: biased outcomes of gene duplication and deletion in \emph{Drosophila}. \emph{Evolution} 73:1850--1862.
+
+\bibitem{betran2002} Betr\'an, E., Thornton, K. \& Long, M. (2002). Retroposed new genes out of the X in \emph{Drosophila}. \emph{Genome Research} 12:1854--1859.
+
+\bibitem{connallon2011} Connallon, T. \& Clark, A.G. (2011). Association between sex-biased gene expression and mutations with sex-specific phenotypic consequences in \emph{Drosophila}. \emph{Genome Biology and Evolution} 3:151--155.
+
+\bibitem{landeen2016} Landeen, E.L., Muirhead, C.A., Wright, L., Meiklejohn, C.D. \& Presgraves, D.C. (2016). Sex chromosome-wide transcriptional suppression and compensatory \emph{cis}-regulatory evolution mediate gene expression in the \emph{Drosophila} male germline. \emph{PLOS Biology} 14:e1002499.
+
+\bibitem{ll1972} Lifschytz, E. \& Lindsley, D.L. (1972). The role of X-chromosome inactivation during spermatogenesis. \emph{Proceedings of the National Academy of Sciences} 69:182--186.
+
+\bibitem{minovic2024} Minovic, A., et al. (2024). Evolution of sex-biased genes in \emph{Drosophila} species with neo-sex chromosomes: potential contribution to reducing sexual conflict. \emph{Ecology and Evolution} 14:e11701.
+
+\bibitem{rice1984} Rice, W.R. (1984). Sex chromosomes and the evolution of sexual dimorphism. \emph{Evolution} 38:735--742.
+
+\bibitem{zhang2010} Zhang, Y.E., Vibranovski, M.D., Landback, P., Marais, G.A.B. \& Long, M. (2010). Chromosomal redistribution of male-biased genes in mammalian evolution with two bursts of gene gain on the X chromosome. \emph{PLOS Biology} 8:e1000494.
+
+\end{thebibliography}
+
+\end{document}

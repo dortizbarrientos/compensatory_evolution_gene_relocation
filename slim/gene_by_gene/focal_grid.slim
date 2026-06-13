@@ -1,0 +1,110 @@
+// ======================================================================
+//  focal_grid.slim   (SLiM 5)   --- BGS mode ---
+//  The relocation experiment: the SAME neutral "gene" placed in three
+//  Ne-and-selection environments, in ONE shared population.
+//
+//    chromosome X  ("X")  : focal neutral window, QUIET flanks   -> source (Ne ~ 0.75N)
+//    chromosome Aq ("Aq") : focal neutral window, QUIET flanks   -> drift null (Ne ~ N)
+//    chromosome Al ("Al") : focal neutral window, LOADED flanks  -> relocated copy (Ne*B)
+//
+//  Each chromosome has identical focal length and focal mutation rate, so
+//  the focal window IS the same gene transplanted into three regimes. The
+//  only difference is inheritance (X vs A) and the flanking environment
+//  (quiet vs deleterious load). All three ride the same pedigree.
+//
+//  TWO MEASUREMENTS (done in Python, except the substitution counts)
+//  -----------------------------------------------------------------
+//  - POLYMORPHISM: focal-window branch diversity (= 4 Ne B, in generations).
+//  - DIVERGENCE / substitution rate k: each chromosome's focal window uses
+//    its OWN neutral mutation type (m2=X, m3=Aq, m4=Al), so we count
+//    fixations per type with no per-chromosome position bookkeeping. We
+//    forward-simulate these neutrals so their fixation genuinely feels the
+//    linked selection -- that is what makes "k = mu regardless of B"
+//    (Birky & Walsh 1988) a real test rather than an assumption.
+//
+//  DEFINES (the Python driver passes all of them)
+//  ----------------------------------------------
+//    N        : diploid census size
+//    L        : length of EACH chromosome (bp)
+//    LFOCAL   : length of the central focal window (bp)
+//    R        : recombination rate per bp
+//    MU_FOCAL : neutral mutation rate in the focal window
+//    MU_DEL   : deleterious mutation rate in the LOADED flanks
+//    SEL_S    : deleterious selection coefficient (set 0.0 for the control)
+//    SEL_H    : dominance of deleterious mutations
+//    BURNIN   : burn-in length as a multiple of N
+//    OUTDIR   : trees-archive directory to write
+// ======================================================================
+
+initialize() {
+
+    initializeTreeSeq();
+    initializeSex();
+
+    // Focal window coordinates, identical on every chromosome.
+    defineConstant("FS", asInteger((L - LFOCAL) / 2));   // focal start
+    defineConstant("FE", FS + LFOCAL - 1);               // focal end (inclusive)
+
+    // --- Mutation types ----------------------------------------------
+    // m1 deleterious (loaded flanks). m2/m3/m4 neutral focal mutations,
+    // one per chromosome so substitutions can be counted by type.
+    initializeMutationType("m1", SEL_H, "f", SEL_S);
+    initializeMutationType("m2", 0.5, "f", 0.0);   // focal neutral, X
+    initializeMutationType("m3", 0.5, "f", 0.0);   // focal neutral, Aq
+    initializeMutationType("m4", 0.5, "f", 0.0);   // focal neutral, Al
+    m1.convertToSubstitution = T;
+    m2.convertToSubstitution = T;
+    m3.convertToSubstitution = T;
+    m4.convertToSubstitution = T;
+
+    // --- Genomic element types ---------------------------------------
+    // NOTE: genomic-element-type IDs must be g<integer> (like m1, p1).
+    initializeGenomicElementType("g1", m1, 1.0);   // deleterious flanks
+    initializeGenomicElementType("g2", m2, 1.0);   // focal neutral, X
+    initializeGenomicElementType("g3", m3, 1.0);   // focal neutral, Aq
+    initializeGenomicElementType("g4", m4, 1.0);   // focal neutral, Al
+
+    // ---- Chromosome 1: X, quiet flanks (the SOURCE) -----------------
+    // Only the focal window mutates; flanks are silent (rate 0).
+    initializeChromosome(1, L, "X", "X");
+    initializeGenomicElement(g2, FS, FE);
+    initializeMutationRate(c(0.0, MU_FOCAL, 0.0), c(FS - 1, FE, L - 1));
+    initializeRecombinationRate(R);
+
+    // ---- Chromosome 2: autosome, quiet flanks (DRIFT null) ----------
+    initializeChromosome(2, L, "A", "Aq");
+    initializeGenomicElement(g3, FS, FE);
+    initializeMutationRate(c(0.0, MU_FOCAL, 0.0), c(FS - 1, FE, L - 1));
+    initializeRecombinationRate(R);
+
+    // ---- Chromosome 3: autosome, LOADED flanks (RELOCATED copy) -----
+    // Deleterious mutations either side of a neutral focal window.
+    initializeChromosome(3, L, "A", "Al");
+    initializeGenomicElement(g1, 0, FS - 1);       // left flank
+    initializeGenomicElement(g4, FS, FE);          // focal
+    initializeGenomicElement(g1, FE + 1, L - 1);   // right flank
+    initializeMutationRate(c(MU_DEL, MU_FOCAL, MU_DEL), c(FS - 1, FE, L - 1));
+    initializeRecombinationRate(R);
+}
+
+1 early() {
+    sim.addSubpop("p1", N);
+}
+
+// End of run: report per-type substitution counts over the SECOND HALF of
+// the run (avoids the initial transient), then write the trees archive.
+BURNIN*N late() {
+    g0 = asInteger(BURNIN * N / 2);          // start of the measurement window
+    subs = sim.substitutions;
+    mtids = subs.mutationType.id;            // mutation-type id of each substitution
+    ftick = subs.fixationTick;               // fixation time of each substitution
+    for (target in c(2, 3, 4)) {
+        keep = (mtids == target) & (ftick >= g0);
+        catn("SUBCOUNT," + target + "," + sum(asInteger(keep)));
+    }
+    catn("INTERVAL," + (BURNIN * N - g0));    // generations in the measurement window
+    catn("FOCAL," + FS + "," + FE);
+    sim.treeSeqOutput(OUTDIR, overwriteDirectory=T);
+    catn("DONE  tick=" + community.tick + "  -> " + OUTDIR);
+    sim.simulationFinished();
+}

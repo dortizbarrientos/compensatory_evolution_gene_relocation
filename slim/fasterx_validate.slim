@@ -1,0 +1,65 @@
+// fasterx_validate.slim  --  recover faster-X in real SLiM (true X chromosome).
+//
+// Fixation probability of a single beneficial mutation (selection S, dominance H)
+// on an autosome (CHROM="A") vs the X (CHROM="X", hemizygous males). Trials run
+// one-at-a-time in a single process; we follow ONLY the focal mutation's
+// frequency (O(1)/generation) and classify by its last frequency before it
+// leaves the segregating pool (converted at fixation, or lost to drift).
+//
+// Theory (Charlesworth-Coyne-Barton 1987): Pfix_A ~ 2HS, Pfix_X ~ 2S(1+2H)/3,
+// X/A substitution-rate ratio = (1+2H)/(4H).  Run:
+//   slim -d "CHROM='X'" -d "H=0.25" fasterx_validate.slim
+
+initialize() {
+    if (!exists("CHROM")) defineConstant("CHROM", "A");
+    if (!exists("H"))     defineConstant("H", 0.5);
+    if (!exists("S"))     defineConstant("S", 0.1);
+    if (!exists("NREP"))  defineConstant("NREP", 5000);
+    if (!exists("NPOP"))  defineConstant("NPOP", 500);
+
+    if (CHROM == "X") initializeSex("X"); else initializeSex("A");
+    initializeMutationRate(0);
+    initializeMutationType("m2", H, "f", S);
+    m2.convertToSubstitution = T;
+    initializeGenomicElementType("g1", m2, 1.0);
+    initializeGenomicElement(g1, 0, 0);
+    initializeRecombinationRate(0);
+
+    defineGlobal("FIX", 0);
+    defineGlobal("TRIES", 0);
+    defineGlobal("STATE", "idle");
+    defineGlobal("PREVFREQ", 0.0);
+}
+
+1 early() { sim.addSubpop("p1", NPOP); }
+
+late() {
+    if (STATE == "idle") {
+        if (TRIES >= NREP) {
+            catn("RESULT\t" + CHROM + "\t" + H + "\t" + S + "\t" + NPOP + "\t" +
+                 TRIES + "\t" + FIX + "\t" + (FIX * 1.0 / TRIES));
+            sim.simulationFinished();
+            return;
+        }
+        if (CHROM == "X") {
+            females = p1.individuals[p1.individuals.sex == "F"];
+            target = sample(sample(females, 1).haplosomes, 1);
+        } else {
+            target = sample(p1.haplosomes, 1);
+        }
+        defineGlobal("MUT", target.addNewDrawnMutation(m2, 0));
+        defineGlobal("STATE", "running");
+        defineGlobal("PREVFREQ", 0.01);
+        defineGlobal("TRIES", TRIES + 1);
+    } else {
+        present = sum(sim.mutations == MUT) > 0;
+        if (present) {
+            defineGlobal("PREVFREQ", sim.mutationFrequencies(p1, MUT));
+        } else {
+            if (PREVFREQ > 0.5) defineGlobal("FIX", FIX + 1);
+            defineGlobal("STATE", "idle");
+        }
+    }
+}
+
+200000 late() { sim.simulationFinished(); }

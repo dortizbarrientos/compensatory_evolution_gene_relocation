@@ -1,0 +1,47 @@
+# ───────────────────────── OS / editor junk ─────────────────────────
+.DS_Store
+._*
+*~
+*.swp
+
+# ───────────────────────────── Python ───────────────────────────────
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# ──────────────────────── LaTeX build artifacts ─────────────────────
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+# keep the compiled PDFs (docs/*.pdf) — they are deliverables, so NOT ignored
+
+# ──────────────────── incomplete / browser downloads ────────────────
+*.crdownload
+*.part
+*.download
+
+# ───────────── large, REGENERABLE SLiM tree-sequence outputs ─────────
+# Regenerate with the *.slim scripts + run_*.py (seeds are in the dir names).
+*.trees
+slim/**/archives/
+slim/**/archives_focal/
+slim/**/smoke/
+
+# ───────────────── large third-party data archives ──────────────────
+# Decide per-file: small + redistributable -> un-ignore by commenting out.
+# Big or license-restricted -> leave ignored and document the source in
+# data/README.md instead.
+#*.zip
+#*.tar.gz
+
+# large third-party archives — keep local, document the source instead
+*.zip
+*.tar.gz

@@ -1,0 +1,25 @@
+# Python dependencies for the X-vs-autosome linked-selection pipeline
+# (run_multichrom.py). SLiM 5 itself is a separate binary, NOT a pip
+# package: install it from https://github.com/MesserLab/SLiM and put
+# `slim` on your PATH (or set SLIM_BINARY).
+#
+# Floors are set to the SLiM-5-compatible line. pyslim 1.1 is the release
+# that provides remove_vacant() (drops the null/vacant haplosomes on the
+# X), which the pipeline depends on; the SLiM-4 line (pyslim 1.0.x) lacks
+# it. The exact versions below were resolved together and verified to
+# expose remove_vacant, next_slim_mutation_id, recapitate, and
+# msprime.SLiMMutationModel.
+
+pyslim>=1.1,<2        # verified: 1.1.1
+tskit>=1.0,<2         # verified: 1.0.3
+msprime>=1.4,<2       # verified: 1.4.2
+numpy>=1.24,<3        # verified: 2.4.4
+
+# Install with:
+#   pip install -r requirements.txt
+#
+# To reproduce the exact verified stack instead, pin precisely:
+#   pyslim==1.1.1
+#   tskit==1.0.3
+#   msprime==1.4.2
+#   numpy==2.4.4

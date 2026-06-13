@@ -1,0 +1,146 @@
+// =============================================================================
+//  compensation_faster_x.slim   --  SLiM 4.x   --  DRAFT (validate before use)
+//
+//  Purpose: the Python Wright-Fisher model is panmictic and haploid, so it
+//  cannot represent the one biological ingredient that most plausibly tilts the
+//  male-female asymmetry: HEMIZYGOSITY of the X in males (the faster-X effect,
+//  the phi term in the tutorial). This SLiM script adds a real X chromosome and
+//  sex-specific germline selection so we can measure how much hemizygous
+//  exposure raises the male-side compensation rate relative to the autosomal
+//  female-side case.
+//
+//  The script is parameterised by two constants set with -d on the command line:
+//     CHROM : "X" or "A"  -- linkage of the relocated gene + its compensator
+//     ROLE  : "boost" or "silence" -- which compensatory response is modelled
+//
+//  Two runs reproduce the asymmetry comparison:
+//     male-side   : -d "CHROM='X'" -d "ROLE='boost'"     (hemizygous in males)
+//     female-side : -d "CHROM='A'" -d "ROLE='silence'"   (no hemizygosity)
+//
+//  IMPORTANT: this is an UNTESTED skeleton. I cannot run SLiM in this
+//  environment. Before trusting any number, confirm it reproduces the Python
+//  gates: with CHROM='A' and selection turned symmetric (no sex-limitation,
+//  no hemizygosity), the rescue probability must match Presc ~ u_c*2*s_c/s_d.
+//  Only then is the faster-X contrast meaningful.
+// =============================================================================
+
+initialize() {
+
+    // ---- model-level options ------------------------------------------------
+    // initializeSex with "X" makes the modelled chromosome an X: males carry a
+    // single copy (hemizygous), females two. With "A" it is an ordinary
+    // autosome. This is the crux that Python could not represent.
+    if (CHROM == "X")
+        initializeSex("X");
+    else
+        initializeSex("A");
+
+    defineConstant("N",   5000);      // diploid population size
+    defineConstant("U_C", 1e-3);      // per-gene rate of the compensatory variant
+    defineConstant("CRHO2", 0.10);    // c * rho^2 expression-cost scale
+    defineConstant("K",   1.0/3.0);   // X male-germline expression fraction
+
+    // misexpression cost s_d, from the tutorial's expression-fitness map:
+    //   male gene driven onto X  : s_d = c rho^2 (1-k)^2
+    //   female gene onto autosome: s_d = c rho^2 (1-k^2)
+    if (ROLE == "boost")
+        defineConstant("S_D", CRHO2 * (1-K)^2);
+    else
+        defineConstant("S_D", CRHO2 * (1 - K^2));
+    defineConstant("S_C", S_D);       // full restoration: benefit = cost removed
+
+    // ---- genetic architecture ----------------------------------------------
+    // m1 = the relocated gene in its MIS-expressed state (carries cost S_D).
+    // m2 = the COMPENSATORY cis-variant (boost or silencer) that removes the cost.
+    // Selection is applied by the fitness() callbacks below, not by these
+    // dominance/selection fields, so we register them as neutral here and let
+    // the callbacks impose sex-specific, location-aware effects.
+    initializeMutationType("m1", 0.5, "f", 0.0);   // relocated copy (callback-scored)
+    initializeMutationType("m2", 0.5, "f", 0.0);   // compensator   (callback-scored)
+    m1.convertToSubstitution = F;
+    m2.convertToSubstitution = F;
+
+    initializeGenomicElementType("g1", m1, 1.0);
+    initializeGenomicElement(g1, 0, 0);            // a single focal site
+    initializeMutationRate(0);                     // no background mutation
+    initializeRecombinationRate(0);                // compensator stays in cis
+}
+
+// -----------------------------------------------------------------------------
+//  Sex-specific, location-aware fitness.
+//
+//  The cost of the mis-expressed relocated copy (m1) is paid only in the sex
+//  whose germline is harmed, and only if it has NOT been compensated by m2 on
+//  the same chromosome (cis). For CHROM='X' the engine already gives males a
+//  single X copy, so a male's single m1 (or m2) is automatically hemizygous --
+//  this is where faster-X enters for free.
+//
+//  ROLE='boost'   : a MALE-benefit gene under-expressed on the X. Cost falls on
+//                   MALES. The boost (m2) restores expression -> removes cost.
+//  ROLE='silence' : a FEMALE-benefit gene mis-expressed in the MALE germline on
+//                   an autosome. Cost falls on MALES (ectopic male expression).
+//                   The silencer (m2) abolishes it -> removes cost.
+//  (In this minimal version both costs are scored in males, which is where the
+//   germline harm lands; adjust the sex test if you model female-germline harm.)
+// -----------------------------------------------------------------------------
+fitnessEffect() {
+    // only males carry the germline cost in this minimal model
+    if (individual.sex != "M")
+        return 1.0;
+
+    // does this individual carry the relocated copy, and is it compensated?
+    hasReloc = individual.countOfMutationsOfType(m1) > 0;
+    hasComp  = individual.countOfMutationsOfType(m2) > 0;
+
+    if (hasReloc & !hasComp)
+        return 1.0 - S_D;     // mis-expressed, uncompensated: pay the cost
+    if (hasReloc & hasComp)
+        return 1.0 + 0.0;     // fully restored: neutral relative to baseline
+    return 1.0;               // no relocated copy: baseline
+}
+
+// -----------------------------------------------------------------------------
+//  Seed one relocated copy; let compensatory variants arise on its background.
+// -----------------------------------------------------------------------------
+1 early() {
+    sim.addSubpop("p1", N);
+    // introduce the relocated copy into a single chromosome
+    target = sample(p1.genomes, 1);
+    target.addNewDrawnMutation(m1, 0);
+    defineGlobal("OUTCOME", "running");
+}
+
+// each generation, m1-bearing chromosomes acquire a compensatory m2 at rate U_C
+late() {
+    relocChrom = p1.genomes[p1.genomes.countOfMutationsOfType(m1) > 0];
+    for (g in relocChrom) {
+        if (g.countOfMutationsOfType(m2) == 0 & runif(1) < U_C)
+            g.addNewDrawnMutation(m2, 0);
+    }
+
+    // absorption checks
+    nReloc = sum(p1.genomes.countOfMutationsOfType(m1) > 0);
+    nComp  = sum(p1.genomes.countOfMutationsOfType(m2) > 0);
+    if (nReloc == 0 & nComp == 0) {
+        defineGlobal("OUTCOME", "lost");
+        sim.simulationFinished();
+    }
+    // rescue: the compensated class established (past the drift barrier)
+    if (nComp >= 0.5 * 2 * N) {
+        defineGlobal("OUTCOME", "rescued");
+        sim.simulationFinished();
+    }
+}
+
+20000 late() {
+    // generation cap: classify by whichever class survived
+    nComp = sum(p1.genomes.countOfMutationsOfType(m2) > 0);
+    defineGlobal("OUTCOME", nComp > 0 ? "rescued" else "lost");
+    sim.simulationFinished();
+}
+
+// At simulationFinished, print one line; wrap this script in a shell loop over
+// many replicates (different -s seeds) and tally OUTCOME to estimate Presc.
+// Compare Presc(X,boost) vs Presc(A,silence): the ratio, at equal U_C and equal
+// S_D structure, isolates the faster-X (hemizygosity) contribution that the
+// Python model omits.

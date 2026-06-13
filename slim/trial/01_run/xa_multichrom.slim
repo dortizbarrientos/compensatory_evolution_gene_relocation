@@ -1,0 +1,123 @@
+// ======================================================================
+//  xa_multichrom.slim   (SLiM 5)
+//  One sexual population, two chromosomes evolved together:
+//    chromosome 1 = autosome ("A")
+//    chromosome 2 = X        ("X")
+//  Everything is shared between them -- the same individuals, the same
+//  pedigree, the same N, the same recombination and selection regime.
+//  The ONLY difference is inheritance. So any difference in diversity
+//  between A and X is a pure consequence of inheritance, which under
+//  neutrality must give the textbook ratio pi_X / pi_A = 3/4.
+//
+//  WHY ONE MODEL INSTEAD OF TWO (the SLiM 5 upgrade)
+//  ------------------------------------------------
+//  In SLiM 4 we would have run A and X as separate simulations with
+//  independent population histories, and compared them only on average
+//  over replicates. SLiM 5 lets both chromosomes ride the SAME history,
+//  so each single run yields a matched (A, X) pair and an internally
+//  controlled ratio. Replicates then measure the spread of that ratio,
+//  not the spread of two unlinked histories.
+//
+//  WHAT IS SIMULATED
+//  -----------------
+//  Only DELETERIOUS mutations are forward-simulated, and only under the
+//  "bgs" (background selection) regime. Neutral variation is added later
+//  in Python by painting mutations onto the recorded genealogy -- exact,
+//  and far cheaper than carrying neutral mutations forward.
+//
+//  BURN-IN AND RECAPITATION
+//  ------------------------
+//  We forward-simulate BURNIN * N generations (default 10N), then let the
+//  Python side RECAPITATE: coalesce any lineages that had not yet found a
+//  common ancestor by the start of the forward sim. Forward sims do not
+//  reliably coalesce at every position (you will see max_roots > 1), so
+//  recapitation is the standard, correct way to complete the genealogy.
+//
+//  The one rule that matters: recapitate at the RIGHT effective size.
+//  The autosome is recapitated at N, the X at 0.75 N -- the per-compartment
+//  correction that preserves the neutral 3/4 ratio. (The SLiM papers use a
+//  single autosomal N_e for all chromosomes, fine for a human demo but not
+//  for us, where the X/A ratio IS the signal.)
+//
+//  For neutral runs this is EXACT: the deep past is genuinely neutral.
+//  For selected runs the recapitated tail is neutral, so we keep it small
+//  by burning in long enough, and the Python side reports the fraction of
+//  each genealogy already settled forward so the tail is never hidden.
+//  (SimHumanity's Fig. 3 is the cautionary case: a LARGE neutral recapitated
+//  tail can make branch diversity look "robust to selection".)
+//
+//  COMMAND-LINE DEFINES (the Python driver always passes all of them)
+//  ------------------------------------------------------------------
+//    COMPARTMENT is NOT needed any more: both chromosomes are in one run.
+//    REGIME   : "neutral" or "bgs"
+//    N        : diploid census size
+//    L        : length of EACH chromosome, in bp
+//    R        : recombination rate per bp per generation
+//    MU_DEL   : deleterious mutation rate per bp (used only under "bgs")
+//    SEL_S    : selection coefficient (negative); set 0.0 for the control
+//    SEL_H    : dominance coefficient (0.5 = additive in heterozygotes)
+//    BURNIN   : burn-in length as a multiple of N (default 10)
+//    OUTDIR   : path of the trees-archive DIRECTORY to write
+//
+//  NOTE ON THE X UNDER SELECTION (for the biologist)
+//  -------------------------------------------------
+//  Males carry a single X haplosome, so deleterious mutations on the X
+//  are fully exposed in males (hemizygous), with no dominant allele to
+//  mask them. SLiM's default hemizygous dominance coefficient is 1.0,
+//  i.e. the male fitness effect is 1 + s. This extra exposure is real
+//  biology and is part of why the X is expected to lose diversity faster
+//  than the autosome under selection -- a feature for rung 2b, not a bug.
+// ======================================================================
+
+initialize() {
+
+    // Record genealogies; neutral mutations are overlaid in Python later.
+    initializeTreeSeq();
+
+    // Enable separate sexes. In SLiM 5 this is a bare call; the chromosome
+    // TYPES (below) decide which chromosome is an autosome vs an X.
+    initializeSex();
+
+    // Deleterious rate is zero unless we are in the background-selection
+    // regime. Under "neutral", nothing is forward-simulated at all.
+    if (REGIME == "bgs")
+        defineConstant("MU", MU_DEL);
+    else
+        defineConstant("MU", 0.0);
+
+    // One deleterious mutation type and one genomic element type, shared
+    // by both chromosomes. "f" = fixed selection coefficient SEL_S.
+    initializeMutationType("m1", SEL_H, "f", SEL_S);
+    m1.convertToSubstitution = T;            // fixed -> substitution; saves memory
+    initializeGenomicElementType("g1", m1, 1.0);
+
+    // --- Chromosome 1: the autosome -----------------------------------
+    // Signature: initializeChromosome(id, length, type, symbol).
+    initializeChromosome(1, L, "A", "A");
+    initializeGenomicElement(g1);            // SLiM 5 shorthand: spans whole chromosome
+    initializeMutationRate(MU);
+    initializeRecombinationRate(R);
+
+    // --- Chromosome 2: the X ------------------------------------------
+    // Recombination is set the same way; SLiM applies it in females and
+    // treats males as hemizygous (a single X haplosome, nothing to cross
+    // over with) automatically. No sex-specific rate map is needed for a
+    // generic organism (that was a Drosophila-specific detail).
+    initializeChromosome(2, L, "X", "X");
+    initializeGenomicElement(g1);
+    initializeMutationRate(MU);
+    initializeRecombinationRate(R);
+}
+
+// Create the population in tick 1.
+1 early() {
+    sim.addSubpop("p1", N);
+}
+
+// End after BURNIN * N generations (dynamic scheduling on the constant N).
+// Write the trees archive: a directory holding one .trees per chromosome.
+BURNIN*N late() {
+    sim.treeSeqOutput(OUTDIR, overwriteDirectory=T);
+    catn("DONE  regime=" + REGIME + "  tick=" + community.tick + "  -> " + OUTDIR);
+    sim.simulationFinished();
+}
