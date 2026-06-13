@@ -1,0 +1,4 @@
+paradox_variation-master.zip (288 MB) is NOT tracked in git (exceeds GitHub's
+100 MB limit). It is a snapshot of Vince Buffalo's public repository:
+  https://github.com/vsbuffalo/paradox_variation
+Re-download from there if needed; keep the local copy out of version control.
